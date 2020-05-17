@@ -49,68 +49,7 @@ router.get("/",function(req,res){
 	res.send("Yo!  This my API.  Call it right, or don't call it at all!");
 });
 
-
-// // GET - read data from database, return status code 200 if successful
-// router.get("/api/employees",function(req,res1){
-// 	//Get hashed password and privileges
-// 	global.connection.query('SELECT Password, Admin, EmployeeID FROM nyc_inspections.Employees WHERE Username = ? LIMIT 1;',
-// 		[req.body["auth_name"]], function (err, res2) {
-// 			if (err) console.log("error");
-//
-// 			if (res2.length > 0) {
-// 				var hashed_password = res2[0]["Password"];
-// 				var admin = res2[0]["Admin"];
-// 				var employee_id = res2[0]["EmployeeID"];
-//
-// 				//Authenticate
-// 				bcrypt.compare(req.body['auth_pass'], hashed_password, function (err, res) {
-// 					if (err) console.log("error");
-// 					if (res == true) {  //If username/password pair is good
-// 						//Only view all if admin
-// 						if (admin == 1) {
-// 							global.connection.query('SELECT * FROM nyc_inspections.Employees LIMIT 10;', function (error, results, fields) {
-// 								if (error) {
-// 									res1.send(JSON.stringify({
-// 										"status": 500,
-// 										"error": "SQL Error",
-// 										"response": "Something is likely wrong with your inputs"
-// 									}));
-// 								} else {
-// 									res1.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-// 								}
-// 							});
-// 						}
-// 						//Only view yourself if not admin
-// 						else {
-// 							global.connection.query('SELECT * FROM nyc_inspections.Employees WHERE EmployeeID = ?;', [employee_id], function (error, results, fields) {
-// 								if (error) {
-// 									res1.send(JSON.stringify({
-// 										"status": 500,
-// 										"error": "SQL Error",
-// 										"response": "Something is likely wrong with your inputs"
-// 									}));
-// 								} else {
-// 									res1.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-// 								}
-// 							});
-// 						}
-// 					} else {
-// 						console.log("Sorry, that username/password is not in our system.");
-// 						res1.send(JSON.stringify({
-// 							"status": 401, "error": "Bad Authentication", "response": "That username/password " +
-// 								"does not exist in our system or you do not have sufficient privileges for that action."
-// 						}));
-// 					}
-// 				});
-// 			} else {
-// 				res1.send(JSON.stringify({
-// 					"status": 401, "error": "Bad Authentication", "response": "That username/password " +
-// 						"does not exist in our system or you do not have sufficient privileges for that action."
-// 				}));
-// 			}
-// 		});
-// 	});
-
+// GET for information on a single company
 router.get("/api/companies/:name",function(req,res1) {
 	//Get hashed password and privileges
 	global.connection.query('select p.PositionTitle, t.Year, t.Term, l.City, l.State as Position ' +
@@ -125,7 +64,52 @@ router.get("/api/companies/:name",function(req,res1) {
 			if (err) console.log("error");
 			res1.send(JSON.stringify({"status": 200, "error": null, "response": res2}));
 		}
-	)});
+	)
+});
+
+router.put("/api/signin",function(req,res){
+	global.connection.query('SELECT * from MAVS_sp20.UserProfiles WHERE Email LIKE ?', [req.body['email']], function (error, results) {
+		if (error) throw error;
+		console.log(results.length)
+		console.log(results)
+		if (results.length === 0){
+			res.send(JSON.stringify({"status": 200, "error": null, "response": false}));
+		}
+		else{
+			bcrypt.compare(req.body['password'], results[0]['Password'], function(err, result) {
+				if (result === true){
+					console.log(results)
+					res.send(JSON.stringify({"status": 200, "error": null, "response": true}));
+				}
+				else {
+					res.send(JSON.stringify({"status": 200, "error": null, "response": false}));
+				}
+			});
+		}
+	});
+});
+
+router.post("/api/signup",function(req,res) {
+	bcrypt.genSalt(saltRounds, function(err, salt) {
+		bcrypt.hash(req.body['password'], salt, function(err, hash) {
+			global.connection.query('SELECT * FROM MAVS_sp20.UserProfiles WHERE Email = ?', [req.body.email], function (error, results) {
+				if (error) throw error;
+				if (results.length > 0) {
+					res.send(JSON.stringify({"status": 200, "error": null, "response": "Already Exists"}));
+				} else {
+					global.connection.query('INSERT INTO MAVS_sp20.UserProfiles(Email, FirstName, LastName, GradYear, Major, `Password`) ' +
+						'VALUES (?, ?, ?, ?, ?, ?);', [req.body['email'], req.body['firstname'], req.body['lastname'], parseInt(req.body['gradyear']), req.body['major'], hash], function (error) {
+						if (error) throw error;
+						res.send(JSON.stringify({"status": 200, "error": null, "response": "Added"}));
+					});
+				}
+
+			});
+		});
+	});
+});
+
+
 
 // start server running on port 3000 (or whatever is set in env)
 app.use(express.static(__dirname + '/'));
