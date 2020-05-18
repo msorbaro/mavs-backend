@@ -47,7 +47,7 @@ router.use(function (req,res,next) {
 
 // set up routing
 // calls should be made to /api/restaurants with GET/PUT/POST/DELETE verbs
-// you can test GETs with a browser using URL http://localhost:3000/api/restaurants or http://localhost:3000/api/restaurants/30075445
+// you can test GETs with a browser using URL https://localhost:3000/api/restaurants or https://localhost:3000/api/restaurants/30075445
 // recommend Postman app for testing other verbs, find it at https://www.postman.com/
 router.get("/",function(req,res){
 	res.send("Yo!  This my API.  Call it right, or don't call it at all!");
@@ -132,7 +132,8 @@ router.delete("/api/employees/:id",function(req,res){
   //Select from Employees where Emplyee ID = 3
 	// if repomse.password = reqiest.passwork -> good
 
-	router.put("/api/signin",function(req,res){
+	router.put("/signin",function(req,res){
+		console.log("AT THE BACKEND");
 
 		global.connection.query('SELECT * from nyc_inspections.Employees WHERE Username LIKE ?', [req.body.username], function (error, results, fields) {
 			if (error) throw error;

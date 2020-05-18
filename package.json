@@ -2,10 +2,10 @@
   "name": "nodemysqlexample",
   "version": "1.0.0",
   "description": "Create a simple web api",
-  "main": "api.js",
+  "main": "mavs_api.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node api.js"
+    "start": "node mavs_api.js"
   },
   "author": "Tim Pierson, Dartmouth CS61, Spring 2020",
   "license": "ISC",

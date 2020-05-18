@@ -26,7 +26,8 @@ app.use(function(req, res, next){
 		host     : config.database.host, 
 		user     : config.database.user, 
 		password : config.database.password, 
-		database : config.database.schema 
+		database : config.database.schema, 
+		// insecureAuth : true
 	});
 	connection.connect();
 	next();
@@ -67,7 +68,8 @@ router.get("/api/companies/:name",function(req,res1) {
 	)
 });
 
-router.put("/api/signin",function(req,res){
+router.post("/api/signin",function(req,res){
+	console.log("at the backend!");
 	global.connection.query('SELECT * from MAVS_sp20.UserProfiles WHERE Email LIKE ?', [req.body['email']], function (error, results) {
 		if (error) throw error;
 		console.log(results.length)
