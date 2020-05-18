@@ -12,12 +12,14 @@ let mysql = require('mysql');
 const bodyParser = require('body-parser'); //allows us to get passed in api calls easily
 var app = express();
 
+var cors = require('cors');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 // get config
 var env = process.argv[2] || 'local'; //use localhost if environment not specified
 var config = require('./mavs_config')[env]; //read credentials from config.js
+app.use(cors());
 
 
 //Database connection
@@ -27,7 +29,7 @@ app.use(function(req, res, next){
 		user     : config.database.user, 
 		password : config.database.password, 
 		database : config.database.schema, 
-		// insecureAuth : true
+		insecureAuth : true
 	});
 	connection.connect();
 	next();
