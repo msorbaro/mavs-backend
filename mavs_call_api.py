@@ -60,7 +60,7 @@ def get_company():
 
 	# Make call
 	print ("\nMaking a get call to "+company)
-	call_url = 'http://localhost:3000/api/companies/' + company
+	call_url = 'https://localhost:3000/api/companies/' + company
 	make_get_call(call_url)
 
 def put_sign_in():
@@ -70,7 +70,7 @@ def put_sign_in():
 	password = input()
 	# Make call
 	print ("\nSigning in...")
-	call_url = 'http://localhost:3000/api/signin'
+	call_url = 'https://localhost:3000/api/signin'
 	data = {'email': email, 'password': password}
 	make_put_call(call_url, data=data)
 
@@ -89,7 +89,7 @@ def post_sign_up():
 	major = input()
 	# Make call
 	print ("\nSigning up...")
-	call_url = 'http://localhost:3000/api/signup'
+	call_url = 'https://localhost:3000/api/signup'
 	data = {'email':email, 'password':password, 'firstname':firstname, 'lastname':lastname, 'gradyear':gradyear, 'major':major}
 	make_post_call(call_url, data)
 

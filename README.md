@@ -12,7 +12,7 @@ update npm: `npm install -g npm`
 update node modules: `npm update`
 
 Runs the server using `yarn start` in the development mode.<br />
-Open [http://localhost:3001](http://localhost:3001) to view it in the browser.
+Open [https://localhost:3001](https://localhost:3001) to view it in the browser.
 
 You will also see any lint errors in the terminal.
 

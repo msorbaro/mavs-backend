@@ -62,21 +62,21 @@ if __name__ == '__main__':
 
 	#make a get call
 	print "Making a get (read) call to restaurants"
-	make_get_call('http://localhost:3000/api/restaurants/')
+	make_get_call('https://localhost:3000/api/restaurants/')
 
 	print "\nMaking a get (read) call to a specific restaurant (id=30075445)"
-	make_get_call('http://localhost:3000/api/restaurants/30075445')
+	make_get_call('https://localhost:3000/api/restaurants/30075445')
 
 	print "\nMaking a post (create) call"
 	restaurant_data = {"RestaurantName": "Your New Retaurant", "Boro": "Manhattan" }
-	make_post_call('http://localhost:3000/api/restaurants/',restaurant_data)
+	make_post_call('https://localhost:3000/api/restaurants/',restaurant_data)
 
 	print "\nMaking a put (update) call"
 	restaurant_data = {"RestaurantName": "This is a new name", "Boro": "Queens" }
-	make_put_call('http://localhost:3000/api/restaurants/30075445',restaurant_data)
+	make_put_call('https://localhost:3000/api/restaurants/30075445',restaurant_data)
 
 	print "\nMaking a delete call to restaurants"
-	make_delete_call('http://localhost:3000/api/restaurants/30075445')
+	make_delete_call('https://localhost:3000/api/restaurants/30075445')
 
 
 

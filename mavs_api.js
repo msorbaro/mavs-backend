@@ -12,12 +12,14 @@ let mysql = require('mysql');
 const bodyParser = require('body-parser'); //allows us to get passed in api calls easily
 var app = express();
 
+var cors = require('cors');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 // get config
 var env = process.argv[2] || 'local'; //use localhost if environment not specified
 var config = require('./mavs_config')[env]; //read credentials from config.js
+app.use(cors());
 
 
 //Database connection
@@ -26,7 +28,8 @@ app.use(function(req, res, next){
 		host     : config.database.host, 
 		user     : config.database.user, 
 		password : config.database.password, 
-		database : config.database.schema 
+		database : config.database.schema, 
+		insecureAuth : true
 	});
 	connection.connect();
 	next();
@@ -67,7 +70,8 @@ router.get("/api/companies/:name",function(req,res1) {
 	)
 });
 
-router.put("/api/signin",function(req,res){
+router.post("/api/signin",function(req,res){
+	console.log("at the backend!");
 	global.connection.query('SELECT * from MAVS_sp20.UserProfiles WHERE Email LIKE ?', [req.body['email']], function (error, results) {
 		if (error) throw error;
 		console.log(results.length)
