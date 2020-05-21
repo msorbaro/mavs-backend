@@ -12,21 +12,24 @@ let mysql = require('mysql');
 const bodyParser = require('body-parser'); //allows us to get passed in api calls easily
 var app = express();
 
+var cors = require('cors');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 // get config
-var env = process.argv[2] || 'local'; //use localhost if environment not specified
+var env = process.argv[2] || 'sunapee'; //use localhost if environment not specified
 var config = require('./mavs_config')[env]; //read credentials from config.js
+app.use(cors());
 
 
 //Database connection
 app.use(function(req, res, next){
 	global.connection = mysql.createConnection({
-		host     : config.database.host, 
-		user     : config.database.user, 
-		password : config.database.password, 
-		database : config.database.schema 
+		host     : config.database.host,
+		user     : config.database.user,
+		password : config.database.password,
+		database : config.database.schema,
+		insecureAuth : true
 	});
 	connection.connect();
 	next();
@@ -140,6 +143,7 @@ router.get("/api/users/:name",function(req,res1) {
 		'where Email like ?;',
 		[req.params.name], function (err, res2) {
 			if (err) console.log("error");
+			console.log(res2)
 			res1.send(JSON.stringify({"status": 200, "error": null, "response": res2}));
 		}
 	)
@@ -194,6 +198,7 @@ router.patch("/api/users/:name",function(req,res1){
 
 // PUT to verify a user's email and password
 router.put("/api/signin",function(req,res){
+	console.log("at the backend!");
 	global.connection.query('SELECT * from MAVS_sp20.UserProfiles WHERE Email LIKE ?', [req.body['email']], function (error, results) {
 		if (error) throw error;
 		console.log(results.length)
@@ -218,16 +223,25 @@ router.put("/api/signin",function(req,res){
 
 // POST to add a new user to the system
 router.post("/api/signup",function(req,res) {
+	console.log("Back end bithc")
 	bcrypt.genSalt(saltRounds, function(err, salt) {
 		bcrypt.hash(req.body['password'], salt, function(err, hash) {
+			console.log(req.body.email);
+			console.log("this is the email apparently");
+			console.log(req.body);
+			console.log("this is the whole body");
 			global.connection.query('SELECT * FROM MAVS_sp20.UserProfiles WHERE Email = ?', [req.body.email], function (error, results) {
+				console.log("made it here")
 				if (error) throw error;
 				if (results.length > 0) {
+					console.log("In this error)")
 					res.send(JSON.stringify({"status": 200, "error": null, "response": "Already Exists"}));
 				} else {
 					global.connection.query('INSERT INTO MAVS_sp20.UserProfiles(Email, FirstName, LastName, GradYear, Major, `Password`) ' +
-						'VALUES (?, ?, ?, ?, ?, ?);', [req.body['email'], req.body['firstname'], req.body['lastname'], parseInt(req.body['gradyear']), req.body['major'], hash], function (error) {
+						'VALUES (?, ?, ?, ?, ?, ?);', [req.body['email'], req.body['username'], null, null, null, hash], function (error) {
+						console.log("here i am once again")
 						if (error) throw error;
+						console.log("should be sending it")
 						res.send(JSON.stringify({"status": 200, "error": null, "response": "Added"}));
 					});
 				}
