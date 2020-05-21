@@ -16,17 +16,17 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 // get config
-var env = process.argv[2] || 'local'; //use localhost if environment not specified
+var env = process.argv[2] || 'sunapee'; //use localhost if environment not specified
 var config = require('./mavs_config')[env]; //read credentials from config.js
 
 
 //Database connection
 app.use(function(req, res, next){
 	global.connection = mysql.createConnection({
-		host     : config.database.host, 
-		user     : config.database.user, 
-		password : config.database.password, 
-		database : config.database.schema 
+		host     : config.database.host,
+		user     : config.database.user,
+		password : config.database.password,
+		database : config.database.schema
 	});
 	connection.connect();
 	next();
@@ -68,6 +68,7 @@ router.get("/api/companies/:name",function(req,res1) {
 });
 
 router.put("/api/signin",function(req,res){
+	console.log("hello");
 	global.connection.query('SELECT * from MAVS_sp20.UserProfiles WHERE Email LIKE ?', [req.body['email']], function (error, results) {
 		if (error) throw error;
 		console.log(results.length)
