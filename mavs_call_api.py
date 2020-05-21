@@ -54,15 +54,85 @@ def make_post_call(url, data={}):
 	print ("post succeeded")
 	print(resp.json()['response'])
 
-def get_company():
+def make_patch_call(url, data={}):
+	#make get call to url
+	resp = requests.patch(url, data)
+	#expecting to get a status of 200 on success
+	if resp.json()['status'] != 200:
+		# This means something went wrong.
+		print('Error ' + str(resp.json()['status']) + " - " + resp.json()['error'])
+		print(resp.json()['response'])
+		exit()
+
+	#print data returned
+	print ("patch succeeded")
+	print(resp.json()['response'])
+
+# GET for basic information on a single company
+def get_company_info():
 	print("Company: ")
 	company = input()
-
 	# Make call
 	print ("\nMaking a get call to "+company)
-	call_url = 'https://localhost:3000/api/companies/' + company
+	call_url = 'http://localhost:3000/api/companies/' + company +'/info'
 	make_get_call(call_url)
 
+# GET for location/term info on all positions in a company
+def get_company_positions():
+	print("Company: ")
+	company = input()
+	# Make call
+	print("\nMaking a get call to " + company + " about positions")
+	call_url = 'http://localhost:3000/api/companies/' + company + '/positions'
+	make_get_call(call_url)
+
+# GET for term/location info for a specific position in a company
+def get_position_info():
+	print("Position: ")
+	position = input()
+	print("Company: ")
+	company = input()
+	# Make call
+	print("\nMaking a get call to " + position + " @ " + company)
+	call_url = 'http://localhost:3000/api/companies/' + company + "/" + position + "/info"
+	make_get_call(call_url)
+
+# GET for all relevant info for every review on a position within a company
+def get_position_reviews():
+	print("Position: ")
+	position = input()
+	print("Company: ")
+	company = input()
+	# Make call
+	print("\nMaking a get call to " + position + " @ " + company)
+	call_url = 'http://localhost:3000/api/companies/' + company + "/" + position + "/reviews"
+	make_get_call(call_url)
+
+# PATCH to update desired info in a user profile
+def patch_user_info():
+	print("Email of account to update: ")
+	email = input()
+	print("New first name: ")
+	fname = input()
+	print("New last name: ")
+	lname = input()
+	print("New password: ")
+	password = input()
+	print("New major: ")
+	major = input()
+	print("New grad year: ")
+	year = input()
+	data = {'FirstName':fname, 'LastName':lname, 'Password':password, 'Major':major, 'GradYear':year}
+	senddata = {}
+	for key in data.keys():
+		if data[key] != '':
+			senddata[key] = data[key]
+	print("\nMaking a patch call for " + email)
+	call_url = 'http://localhost:3000/api/users/' + email
+	make_patch_call(call_url, senddata)
+
+
+# PUT to verify a user's email and password
 def put_sign_in():
 	print("Email: ")
 	email = input()
@@ -74,6 +144,8 @@ def put_sign_in():
 	data = {'email': email, 'password': password}
 	make_put_call(call_url, data=data)
 
+
+# POST to add a new user to the system
 def post_sign_up():
 	print("Email: ")
 	email = input()
@@ -93,7 +165,41 @@ def post_sign_up():
 	data = {'email':email, 'password':password, 'firstname':firstname, 'lastname':lastname, 'gradyear':gradyear, 'major':major}
 	make_post_call(call_url, data)
 
+def get_all_companies():
+	print("\nMaking a get call for all companies")
+	call_url = 'http://localhost:3000/api/companies'
+	make_get_call(call_url)
+
+def get_user_info():
+	print("Email: ")
+	email = input()
+	# Make call
+	print("\nMaking a get call to " + email)
+	call_url = 'http://localhost:3000/api/users/' + email
+	make_get_call(call_url)
+
 if __name__ == '__main__':
-	#get_company()
-	put_sign_in()
-	#post_sign_up()
+	print("Call to test: ")
+	call = int(input())
+	while call != 0:
+		if call == 1:
+			get_company_info()  # 1
+		elif call == 2:
+			get_company_positions()  # 2
+		elif call == 3:
+			get_position_info()  # 3
+		elif call == 4:
+			get_position_reviews()  # 4
+		elif call == 5:
+			patch_user_info()  # 5
+		elif call == 6:
+			put_sign_in()  # 6
+		elif call == 7:
+			post_sign_up()  # 7
+		elif call == 8:
+			get_all_companies()
+		elif call == 9:
+			get_user_info()
+		print("\nCall to test: ")
+		call = int(input())
+	exit()
