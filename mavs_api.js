@@ -65,12 +65,25 @@ router.get("/api/companies/:name",function(req,res1) {
 		'(SELECT CompanyID FROM MAVS_sp20.Companies WHERE CompanyName like ?);',
 		[req.params.name], function (err, res2) {
 			if (err) console.log("error");
+			console.log(res2)
 			res1.send(JSON.stringify({"status": 200, "error": null, "response": res2}));
 		}
 	)
 });
 
-router.post("/api/signin",function(req,res){
+router.get("/api/companies",function(req,res1) {
+	console.log("hello")
+	//Get hashed password and privileges
+	global.connection.query('(SELECT * FROM MAVS_sp20.Companies);',
+		 function (err, res2) {
+			if (err) console.log("error");
+			res1.send(JSON.stringify({"status": 200, "error": null, "response": res2}));
+		}
+	)
+});
+
+
+router.put("/api/signin",function(req,res){
 	console.log("at the backend!");
 	global.connection.query('SELECT * from MAVS_sp20.UserProfiles WHERE Email LIKE ?', [req.body['email']], function (error, results) {
 		if (error) throw error;
@@ -94,16 +107,25 @@ router.post("/api/signin",function(req,res){
 });
 
 router.post("/api/signup",function(req,res) {
+	console.log("Back end bithc")
 	bcrypt.genSalt(saltRounds, function(err, salt) {
 		bcrypt.hash(req.body['password'], salt, function(err, hash) {
+			console.log(req.body.email);
+			console.log("this is the email apparently");
+			console.log(req.body);
+			console.log("this is the whole body");
 			global.connection.query('SELECT * FROM MAVS_sp20.UserProfiles WHERE Email = ?', [req.body.email], function (error, results) {
+				console.log("made it here")
 				if (error) throw error;
 				if (results.length > 0) {
+					console.log("In this error)")
 					res.send(JSON.stringify({"status": 200, "error": null, "response": "Already Exists"}));
 				} else {
 					global.connection.query('INSERT INTO MAVS_sp20.UserProfiles(Email, FirstName, LastName, GradYear, Major, `Password`) ' +
-						'VALUES (?, ?, ?, ?, ?, ?);', [req.body['email'], req.body['firstname'], req.body['lastname'], parseInt(req.body['gradyear']), req.body['major'], hash], function (error) {
+						'VALUES (?, ?, ?, ?, ?, ?);', [req.body['email'], req.body['username'], null, null, null, hash], function (error) {
+						console.log("here i am once again")
 						if (error) throw error;
+						console.log("should be sending it")
 						res.send(JSON.stringify({"status": 200, "error": null, "response": "Added"}));
 					});
 				}
