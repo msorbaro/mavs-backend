@@ -14,6 +14,11 @@ You will also see any lint errors in the terminal.
 
 Make sure you run the backend before starting the frontend.
 
+### Calls Yet To Do
+* POST for writing new reviews
+* DELETE for something - idk what
+* Any other requests? You can add them here.
+
 ### Current API calls
 #### GET for basic information on a single company
  /api/companies/:name/info
