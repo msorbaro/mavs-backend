@@ -16,7 +16,12 @@ Make sure you run the backend before starting the frontend.
 
 ### Calls Yet To Do
 * POST for writing new reviews
-* DELETE for something - idk what
+* GET for reviews from a company + relevant info
+* POST to add a company
+* POST to add a review
+* DELETE a review 
+* GET to view all reviews by a user
+
 * Any other requests? You can add them here.
 
 ### Current API calls
