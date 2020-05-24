@@ -71,7 +71,7 @@ router.get("/api/companies",function(req,res1) {
 	global.connection.query('select c.CompanyName ' +
 		'from MAVS_sp20.Companies c;',
 		[], function (err, res2) {
-			if (err) console.log("error");
+			if (err) console.log(err);
 			res1.send(JSON.stringify({"status": 200, "error": null, "response": res2}));
 		}
 	)
@@ -134,6 +134,16 @@ router.get("/api/companies/:name/:title/reviews",function(req,res1) {
 	)
 });
 
+router.post("/api/companies",function(req,res){
+		global.connection.query('INSERT INTO MAVS_sp20.Companies ( CompanyName, CompanySize, CompanyField ) VALUES (?, ?, ?) ', [req.body.name, req.body.size, req.body.field],
+		function (error, results, fields) {
+				if (error) throw error;
+						res.send(JSON.stringify({"status": 200, "error": null, "response": "Added"}));
+				});
+	})
+
+
+
 
 // GET to view information within a user's profile
 router.get("/api/users/:name",function(req,res1) {
@@ -179,6 +189,10 @@ router.patch("/api/users/:name",function(req,res1){
 					});
 				}
 				else {
+					console.log(col);
+					console.log("thois should be paramter");
+					console.log(req.body[col]);
+					console.log("This should be which is changed");
 					global.connection.query('UPDATE MAVS_sp20.UserProfiles SET ?? = ? WHERE Email = ?;',
 						[col, req.body[col], req.params.name], function (error, results) {
 						if (error) res1.send(JSON.stringify({
@@ -238,7 +252,7 @@ router.post("/api/signup",function(req,res) {
 					res.send(JSON.stringify({"status": 200, "error": null, "response": "Already Exists"}));
 				} else {
 					global.connection.query('INSERT INTO MAVS_sp20.UserProfiles(Email, FirstName, LastName, GradYear, Major, `Password`) ' +
-						'VALUES (?, ?, ?, ?, ?, ?);', [req.body['email'], req.body['username'], null, null, null, hash], function (error) {
+						'VALUES (?, ?, ?, ?, ?, ?);', [req.body['email'], req.body['firstname'], req.body['lastname'], req.body['gradYear'], req.body['major'], hash], function (error) {
 						console.log("here i am once again")
 						if (error) throw error;
 						console.log("should be sending it")
