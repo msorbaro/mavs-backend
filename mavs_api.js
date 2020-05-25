@@ -12,24 +12,21 @@ let mysql = require('mysql');
 const bodyParser = require('body-parser'); //allows us to get passed in api calls easily
 var app = express();
 
-var cors = require('cors');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 // get config
-var env = process.argv[2] || 'sunapee'; //use localhost if environment not specified
+var env = process.argv[2] || 'local'; //use localhost if environment not specified
 var config = require('./mavs_config')[env]; //read credentials from config.js
-app.use(cors());
 
 
 //Database connection
 app.use(function(req, res, next){
 	global.connection = mysql.createConnection({
-		host     : config.database.host,
-		user     : config.database.user,
-		password : config.database.password,
-		database : config.database.schema,
-		insecureAuth : true
+		host     : config.database.host, 
+		user     : config.database.user, 
+		password : config.database.password, 
+		database : config.database.schema 
 	});
 	connection.connect();
 	next();
@@ -54,7 +51,7 @@ router.get("/",function(req,res){
 
 
 // GET for basic information on a single company
-// nme = company name
+// name = company name
 router.get("/api/companies/:name/info",function(req,res1) {
 	//Get hashed password and privileges
 	global.connection.query('select c.CompanyName, c.CompanySize, c.CompanyField '+
@@ -153,7 +150,6 @@ router.get("/api/users/:name",function(req,res1) {
 		'where Email like ?;',
 		[req.params.name], function (err, res2) {
 			if (err) console.log("error");
-			console.log(res2)
 			res1.send(JSON.stringify({"status": 200, "error": null, "response": res2}));
 		}
 	)
@@ -212,7 +208,6 @@ router.patch("/api/users/:name",function(req,res1){
 
 // PUT to verify a user's email and password
 router.put("/api/signin",function(req,res){
-	console.log("at the backend!");
 	global.connection.query('SELECT * from MAVS_sp20.UserProfiles WHERE Email LIKE ?', [req.body['email']], function (error, results) {
 		if (error) throw error;
 		console.log(results.length)
@@ -237,25 +232,18 @@ router.put("/api/signin",function(req,res){
 
 // POST to add a new user to the system
 router.post("/api/signup",function(req,res) {
-	console.log("Back end bithc")
 	bcrypt.genSalt(saltRounds, function(err, salt) {
 		bcrypt.hash(req.body['password'], salt, function(err, hash) {
-			console.log(req.body.email);
-			console.log("this is the email apparently");
-			console.log(req.body);
-			console.log("this is the whole body");
 			global.connection.query('SELECT * FROM MAVS_sp20.UserProfiles WHERE Email = ?', [req.body.email], function (error, results) {
-				console.log("made it here")
 				if (error) throw error;
 				if (results.length > 0) {
-					console.log("In this error)")
 					res.send(JSON.stringify({"status": 200, "error": null, "response": "Already Exists"}));
 				} else {
 					global.connection.query('INSERT INTO MAVS_sp20.UserProfiles(Email, FirstName, LastName, GradYear, Major, `Password`) ' +
+
 						'VALUES (?, ?, ?, ?, ?, ?);', [req.body['email'], req.body['firstname'], req.body['lastname'], req.body['gradYear'], req.body['major'], hash], function (error) {
 						console.log("here i am once again")
 						if (error) throw error;
-						console.log("should be sending it")
 						res.send(JSON.stringify({"status": 200, "error": null, "response": "Added"}));
 					});
 				}
@@ -265,6 +253,138 @@ router.post("/api/signup",function(req,res) {
 	});
 });
 
+
+//POST to write a new review
+router.post("/api/review",function(req,res1) {
+	var full_response = [];
+	global.connection.query('SELECT PersonID FROM MAVS_sp20.UserProfiles WHERE Email = ?;',
+		[req.body["Email"]], function (err, res2) {
+			if (err) console.log("error getting personid");
+			full_response.push(res2);
+			if (res2.length > 0) {
+				var personid = res2[0]["PersonID"];
+				global.connection.query('CALL new_comp(?);',
+					[req.body["CompanyName"]], function (err, res3) {
+						if (err) console.log("error running new_comp procedure");
+						full_response.push(res3);
+					});
+				global.connection.query('SELECT CompanyID FROM MAVS_sp20.Companies WHERE CompanyName = ?;',
+					[req.body["CompanyName"]], function (err, res4) {
+						if (err) console.log("error getting compid");
+						full_response.push(res4);
+						if (res4.length > 0) {
+							var compid = res4[0]["CompanyID"];
+							global.connection.query('CALL new_pos(?, ?);',
+								[req.body["PositionTitle"], compid], function (err, res5) {
+									if (err) console.log("error running new_pos procedure");
+									full_response.push(res5);
+								});
+							global.connection.query('SELECT PositionID FROM MAVS_sp20.Positions WHERE PositionTitle like ? and CompanyID = ?',
+								[req.body["PositionTitle"], compid], function (err, res6) {
+									if (err) console.log("error getting posid");
+									full_response.push(res6);
+									if (res6.length > 0) {
+										var posid = res6[0]["PositionID"];
+										global.connection.query('INSERT INTO MAVS_sp20.Locations (City, State) Value (?, ?);',
+											[req.body["City"], req.body["State"]], function (err, res7) {
+												if (err) console.log("error creating new location");
+												full_response.push(res7);
+											});
+										global.connection.query('SELECT LocationID FROM MAVS_sp20.Locations WHERE City like ? and State like ? LIMIT 1;',
+											[req.body["City"], req.body["State"]], function (err, res8) {
+												if (err) console.log("error getting locid");
+												full_response.push(res8);
+												if (res8.length > 0) {
+													var locid = res8[0]["LocationID"];
+													global.connection.query('INSERT INTO MAVS_sp20.LocatedAt (PositionID, LocationID) VALUES (?, ?);',
+														[posid, locid], function (err, res9) {
+															if (err) console.log("error updating located at");
+															full_response.push(res9);
+														});
+												}
+											});
+										global.connection.query('INSERT INTO MAVS_sp20.Terms (Term, `Year`) Value (?, ?);',
+											[req.body["Term"], req.body["Year"]], function (err, res10) {
+												if (err) console.log("error creating new term");
+												full_response.push(res10);
+											});
+										global.connection.query('SELECT TermID FROM MAVS_sp20.Terms WHERE Term like ? and `Year` like ? LIMIT 1;',
+											[req.body["Term"], req.body["Year"]], function (err, res11) {
+												if (err) console.log("error getting termid");
+												full_response.push(res11);
+												if (res11.length > 0) {
+													var termid = res11[0]["TermID"];
+													global.connection.query('INSERT INTO MAVS_sp20.OfferedTerms (PositionID, TermID) VALUE (?, ?);',
+														[posid, termid], function (err, res12) {
+															if (err) console.log("error updating offered terms");
+															full_response.push(res12);
+														});
+												}
+											});
+										global.connection.query('INSERT INTO MAVS_sp20.Reviews (PositionID, Rating, Comment, PersonID, Anonymous) VALUES (?, ?, ?, ?, ?);',
+											[posid, req.body["Rating"], req.body["Comment"], personid, req.body["Anonymous"]], function (err, res13) {
+												if (err) console.log("error writing the review");
+												full_response.push(res13);
+											});
+										res1.send(full_response);
+									}
+								});
+						}
+					});
+			}
+		});
+	console.log("DONE\n")
+});
+
+
+// GET for all the review for a company
+// name = Company Name
+router.get("/api/companies/:name/reviews",function(req,res1) {
+	//Get hashed password and privileges
+	global.connection.query('select r.ReviewID, p.PositionTitle, c.CompanyName, r.ReviewDate, r.Rating, r.Comment, r.Anonymous, '+
+		'u.FirstName, u.LastName, u.GradYear, u.Major '+
+		'from MAVS_sp20.Reviews r '+
+		'left join MAVS_sp20.Positions p on r.PositionID = p.PositionID '+
+		'left join MAVS_sp20.Companies c on p.CompanyID = c.CompanyID '+
+		'left join MAVS_sp20.UserProfiles u on r.PersonID = u.PersonID '+
+		'where c.CompanyName like ?;',
+		[req.params.name], function (err, res2) {
+			if (err) console.log("error");
+			res1.send(JSON.stringify({"status": 200, "error": null, "response": res2}));
+		}
+	)
+});
+
+
+// GET for all the review for a user
+// name = user's email
+router.get("/api/users/:name/reviews",function(req,res1) {
+	//Get hashed password and privileges
+	global.connection.query('SELECT r.ReviewID, p.PositionTitle, c.CompanyName, r.ReviewDate, r.Rating, r.Comment, r.Anonymous, '+
+		'u.FirstName, u.LastName, u.GradYear, u.Major '+
+		'from MAVS_sp20.Reviews r '+
+		'left join MAVS_sp20.Positions p on r.PositionID = p.PositionID '+
+		'left join MAVS_sp20.Companies c on p.CompanyID = c.CompanyID '+
+		'left join MAVS_sp20.UserProfiles u on r.PersonID = u.PersonID '+
+		'where u.Email like ?;',
+		[req.params.name], function (err, res2) {
+			if (err) console.log("error");
+			res1.send(JSON.stringify({"status": 200, "error": null, "response": res2}));
+		}
+	)
+});
+
+
+// DELETE a review by ReviewID
+router.delete("/api/reviews/:id",function(req,res1) {
+	//Get hashed password and privileges
+	global.connection.query('DELETE FROM MAVS_sp20.Reviews WHERE ReviewID = ?;',
+		[req.params.id], function (err, res2) {
+			if (err) console.log("error");
+			res1.send(JSON.stringify({"status": 200, "error": null, "response": res2}));
+		}
+	)
+});
 
 
 // start server running on port 3000 (or whatever is set in env)
