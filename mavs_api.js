@@ -338,7 +338,7 @@ router.post("/api/review",function(req,res1) {
 															if (err) console.log("error updating offered terms");
 															full_response.push(res12);
 														});
-													global.connection.query('INSERT INTO MAVS_sp20.Reviews (PositionID, Rating, Comment, PersonID, Anonymous, TermID) VALUES (?, ?, ?, ?, ?);',
+													global.connection.query('INSERT INTO MAVS_sp20.Reviews (PositionID, Rating, Comment, PersonID, Anonymous, TermID) VALUES (?, ?, ?, ?, ?, ?);',
 														[posid, req.body["Rating"], req.body["Comment"], personid, req.body["Anonymous"], termid], function (err, res13) {
 															if (err) console.log("error writing the review");
 															full_response.push(res13);
