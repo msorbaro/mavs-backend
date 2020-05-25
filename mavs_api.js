@@ -16,9 +16,10 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 // get config
+var cors = require('cors');
 var env = process.argv[2] || 'sunapee'; //use localhost if environment not specified
 var config = require('./mavs_config')[env]; //read credentials from config.js
-
+app.use(cors());
 
 //Database connection
 app.use(function(req, res, next){
