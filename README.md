@@ -15,16 +15,14 @@ You will also see any lint errors in the terminal.
 Make sure you run the backend before starting the frontend.
 
 ### Calls Yet To Do
-* POST for writing new reviews
-* GET for reviews from a company + relevant info
 * POST to add a company
-* POST to add a review
-* DELETE a review 
-* GET to view all reviews by a user
-
 * Any other requests? You can add them here.
 
 ### Current API calls
+* POST for writing new reviews
+* GET for reviews from a company + relevant info
+* GET to view all reviews by a user
+* DELETE a review 
 #### GET for basic information on a single company
  /api/companies/:name/info
  name = company name
