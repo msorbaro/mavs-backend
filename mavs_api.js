@@ -16,17 +16,17 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 // get config
-var env = process.argv[2] || 'local'; //use localhost if environment not specified
+var env = process.argv[2] || 'sunapee'; //use localhost if environment not specified
 var config = require('./mavs_config')[env]; //read credentials from config.js
 
 
 //Database connection
 app.use(function(req, res, next){
 	global.connection = mysql.createConnection({
-		host     : config.database.host, 
-		user     : config.database.user, 
-		password : config.database.password, 
-		database : config.database.schema 
+		host     : config.database.host,
+		user     : config.database.user,
+		password : config.database.password,
+		database : config.database.schema
 	});
 	connection.connect();
 	next();
