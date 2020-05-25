@@ -117,12 +117,13 @@ router.get("/api/companies/:name/:title/info",function(req,res1) {
 // name = company name, title = position title
 router.get("/api/companies/:name/:title/reviews",function(req,res1) {
 	//Get hashed password and privileges
-	global.connection.query('select p.PositionTitle, r.ReviewDate, r.Rating, r.Comment, r.Anonymous, '+
+	global.connection.query('select p.PositionTitle, r.ReviewDate, t.Term, t.Year, r.Rating, r.Comment, r.Anonymous, '+
 	'u.FirstName, u.LastName, u.GradYear, u.Major '+
 	'from MAVS_sp20.Reviews r '+
 	'left join MAVS_sp20.Positions p on r.PositionID = p.PositionID '+
 	'left join MAVS_sp20.Companies c on p.CompanyID = c.CompanyID '+
 	'left join MAVS_sp20.UserProfiles u on r.PersonID = u.PersonID '+
+	'left join MAVS_sp20.Terms t on r.TermID = t.TermID '+
 	'where p.PositionTitle like ? and c.CompanyName like ?;',
 		[req.params.title, req.params.name], function (err, res2) {
 			if (err) console.log("error");
@@ -303,14 +304,14 @@ router.post("/api/review",function(req,res1) {
 															if (err) console.log("error updating offered terms");
 															full_response.push(res12);
 														});
+													global.connection.query('INSERT INTO MAVS_sp20.Reviews (PositionID, Rating, Comment, PersonID, Anonymous, TermID) VALUES (?, ?, ?, ?, ?);',
+														[posid, req.body["Rating"], req.body["Comment"], personid, req.body["Anonymous"], termid], function (err, res13) {
+															if (err) console.log("error writing the review");
+															full_response.push(res13);
+														});
+													res1.send(full_response);
 												}
 											});
-										global.connection.query('INSERT INTO MAVS_sp20.Reviews (PositionID, Rating, Comment, PersonID, Anonymous) VALUES (?, ?, ?, ?, ?);',
-											[posid, req.body["Rating"], req.body["Comment"], personid, req.body["Anonymous"]], function (err, res13) {
-												if (err) console.log("error writing the review");
-												full_response.push(res13);
-											});
-										res1.send(full_response);
 									}
 								});
 						}
@@ -325,12 +326,13 @@ router.post("/api/review",function(req,res1) {
 // name = Company Name
 router.get("/api/companies/:name/reviews",function(req,res1) {
 	//Get hashed password and privileges
-	global.connection.query('select r.ReviewID, p.PositionTitle, c.CompanyName, r.ReviewDate, r.Rating, r.Comment, r.Anonymous, '+
+	global.connection.query('select r.ReviewID, p.PositionTitle, c.CompanyName, r.ReviewDate, t.Term, t.Year, r.Rating, r.Comment, r.Anonymous, '+
 		'u.FirstName, u.LastName, u.GradYear, u.Major '+
 		'from MAVS_sp20.Reviews r '+
 		'left join MAVS_sp20.Positions p on r.PositionID = p.PositionID '+
 		'left join MAVS_sp20.Companies c on p.CompanyID = c.CompanyID '+
 		'left join MAVS_sp20.UserProfiles u on r.PersonID = u.PersonID '+
+		'left join MAVS_sp20.Terms t on r.TermID = t.TermID '+
 		'where c.CompanyName like ?;',
 		[req.params.name], function (err, res2) {
 			if (err) console.log("error");
@@ -344,12 +346,13 @@ router.get("/api/companies/:name/reviews",function(req,res1) {
 // name = user's email
 router.get("/api/users/:name/reviews",function(req,res1) {
 	//Get hashed password and privileges
-	global.connection.query('SELECT r.ReviewID, p.PositionTitle, c.CompanyName, r.ReviewDate, r.Rating, r.Comment, r.Anonymous, '+
+	global.connection.query('SELECT r.ReviewID, p.PositionTitle, c.CompanyName, r.ReviewDate, t.Term, t.Year, r.Rating, r.Comment, r.Anonymous, '+
 		'u.FirstName, u.LastName, u.GradYear, u.Major '+
 		'from MAVS_sp20.Reviews r '+
 		'left join MAVS_sp20.Positions p on r.PositionID = p.PositionID '+
 		'left join MAVS_sp20.Companies c on p.CompanyID = c.CompanyID '+
 		'left join MAVS_sp20.UserProfiles u on r.PersonID = u.PersonID '+
+		'left join MAVS_sp20.Terms t on r.TermID = t.TermID '+
 		'where u.Email like ?;',
 		[req.params.name], function (err, res2) {
 			if (err) console.log("error");
