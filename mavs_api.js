@@ -359,7 +359,7 @@ router.post("/api/review",function(req,res1) {
 // name = Company Name
 router.get("/api/companies/:name/reviews",function(req,res1) {
 	global.connection.query('select r.ReviewID, p.PositionTitle, c.CompanyName, r.ReviewDate, t.Term, t.Year, l.City, l.State, r.Rating, r.InterviewDifficulty, r.Comment, r.Anonymous, '+
-		'u.FirstName, u.LastName, u.GradYear, u.Major '+
+		'u.FirstName, u.LastName, u.GradYear, u.Major, u.Email '+
 		'from MAVS_sp20.Reviews r '+
 		'left join MAVS_sp20.Positions p on r.PositionID = p.PositionID '+
 		'left join MAVS_sp20.Companies c on p.CompanyID = c.CompanyID '+
@@ -380,7 +380,7 @@ router.get("/api/companies/:name/reviews",function(req,res1) {
 router.get("/api/users/:name/reviews",function(req,res1) {
 	//Get hashed password and privileges
 	global.connection.query('SELECT r.ReviewID, p.PositionTitle, c.CompanyName, r.ReviewDate, t.Term, t.Year, l.City, l.State, r.Rating, r.InterviewDifficulty, r.Comment, r.Anonymous, '+
-		'u.FirstName, u.LastName, u.GradYear, u.Major '+
+		'u.FirstName, u.LastName, u.GradYear, u.Major, u.Email '+
 		'from MAVS_sp20.Reviews r '+
 		'left join MAVS_sp20.Positions p on r.PositionID = p.PositionID '+
 		'left join MAVS_sp20.Companies c on p.CompanyID = c.CompanyID '+
