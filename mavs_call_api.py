@@ -1,11 +1,7 @@
 import requests
 
 '''
-<<<<<<< HEAD
 Client side demo to fetch data from a RESTful API.  Assumes Node.js file api is running (nodemon api.js <localhost|sunapee>)
-=======
-Client side demo to fetch data from a RESTful API.  Assumes Node.js file api is running (nodemon api.js <localhost|sunapee>) 
->>>>>>> 4ab2e4d95d5f92087ae40e289d422e40fcb6de9d
 on the server side.
 Authors: Tim Pierson, Dartmouth CS61, Spring 2020 (framework)
 		Summer Christensen, Dartmouth CS61, Spring 2020
@@ -13,11 +9,7 @@ Requires installation of mysql connector: pip install mysql-connector-python
 	also requires Requests: pip install requests
 Based on: https://dev.mysql.com/doc/connector-python/en/connector-python-example-connecting.html
 
-<<<<<<< HEAD
 Usage: python call_api.py
-=======
-Usage: python call_api.py 
->>>>>>> 4ab2e4d95d5f92087ae40e289d422e40fcb6de9d
 '''
 
 def make_get_call(url):
@@ -76,8 +68,6 @@ def make_patch_call(url, data={}):
 	print ("patch succeeded")
 	print(resp.json()['response'])
 
-<<<<<<< HEAD
-=======
 def make_delete_call(url):
 	#make get call to url
 	resp = requests.delete(url)
@@ -92,7 +82,6 @@ def make_delete_call(url):
 	print ("delete succeeded")
 	print(resp.json()['response'])
 
->>>>>>> 4ab2e4d95d5f92087ae40e289d422e40fcb6de9d
 # GET for basic information on a single company
 def get_company_info():
 	print("Company: ")
@@ -165,11 +154,7 @@ def put_sign_in():
 	password = input()
 	# Make call
 	print ("\nSigning in...")
-<<<<<<< HEAD
-	call_url = 'https://localhost:3000/api/signin'
-=======
 	call_url = 'http://localhost:3000/api/signin'
->>>>>>> 4ab2e4d95d5f92087ae40e289d422e40fcb6de9d
 	data = {'email': email, 'password': password}
 	make_put_call(call_url, data=data)
 
@@ -190,11 +175,7 @@ def post_sign_up():
 	major = input()
 	# Make call
 	print ("\nSigning up...")
-<<<<<<< HEAD
-	call_url = 'https://localhost:3000/api/signup'
-=======
 	call_url = 'http://localhost:3000/api/signup'
->>>>>>> 4ab2e4d95d5f92087ae40e289d422e40fcb6de9d
 	data = {'email':email, 'password':password, 'firstname':firstname, 'lastname':lastname, 'gradyear':gradyear, 'major':major}
 	make_post_call(call_url, data)
 
@@ -211,9 +192,6 @@ def get_user_info():
 	call_url = 'http://localhost:3000/api/users/' + email
 	make_get_call(call_url)
 
-<<<<<<< HEAD
-=======
-
 def fail_call_test():
 	print("\nMaking a test post call")
 	call_url = 'http://localhost:3000/api/test'
@@ -222,7 +200,7 @@ def fail_call_test():
 def post_new_review():
 	print("\nMaking a post call for a new review")
 	call_url = 'http://localhost:3000/api/review'
-	data = {'Email':'test@dartmouth.edu', 'PositionTitle':'Blacksmith', 'CompanyName':'Medieval Times', 'Term':'W', 'Year':2020, 'City':'London', 'State':'GB', 'Rating':10, 'Comment':'New review with new location and new position and new term', 'Anonymous':1}
+	data = {'Email':'test@dartmouth.edu', 'PositionTitle':'Blacksmith', 'CompanyName':'Medieval Times', 'Term':'W', 'Year':2020, 'City':'London', 'State':'GB', 'Rating':10, 'Comment':'New review with new location and new position and new term', 'Anonymous':1, 'InterviewDifficulty':8}
 	make_post_call(call_url, data)
 
 def get_company_reviews():
@@ -246,7 +224,24 @@ def delete_review():
 	call_url = 'http://localhost:3000/api/reviews/' + review
 	make_delete_call(call_url)
 
->>>>>>> 4ab2e4d95d5f92087ae40e289d422e40fcb6de9d
+def patch_review():
+	print("ReviewID: ")
+	review = input()
+	print("New Rating: ")
+	rating = input()
+	print("New Interview Difficulty: ")
+	intdiff = input()
+	print("New Comment: ")
+	comment = input()
+	data = {'Rating':rating, 'InterviewDifficulty':intdiff, 'Comment':comment}
+	usable_data = {}
+	for key in data.keys():
+		if data[key] != '':
+			usable_data[key] = data[key]
+	print("\nMaking a patch call for a review")
+	call_url = 'http://localhost:3000/api/reviews/' + review
+	make_patch_call(call_url, usable_data)
+
 if __name__ == '__main__':
 	print("Call to test: ")
 	call = int(input())
@@ -269,8 +264,6 @@ if __name__ == '__main__':
 			get_all_companies()
 		elif call == 9:
 			get_user_info()
-<<<<<<< HEAD
-=======
 		elif call == 10:
 			fail_call_test()
 		elif call == 11:
@@ -281,7 +274,8 @@ if __name__ == '__main__':
 			get_user_reviews()
 		elif call == 14:
 			delete_review()
->>>>>>> 4ab2e4d95d5f92087ae40e289d422e40fcb6de9d
+		elif call == 15:
+			patch_review()
 		print("\nCall to test: ")
 		call = int(input())
 	exit()
