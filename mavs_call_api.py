@@ -201,7 +201,7 @@ def fail_call_test():
 def post_new_review():
 	print("\nMaking a post call for a new review")
 	call_url = 'http://localhost:3000/api/review'
-	data = {'Email':'test@dartmouth.edu', 'PositionTitle':'Blacksmith', 'CompanyName':'Medieval Times', 'Term':'W', 'Year':2020, 'City':'London', 'State':'GB', 'Rating':10, 'Comment':'New review with new location and new position and new term', 'Anonymous':1}
+	data = {'Email':'test@dartmouth.edu', 'PositionTitle':'Blacksmith', 'CompanyName':'Medieval Times', 'Term':'W', 'Year':2020, 'City':'London', 'State':'GB', 'Rating':10, 'Comment':'New review with new location and new position and new term', 'Anonymous':1, 'InterviewDifficulty':8}
 	make_post_call(call_url, data)
 
 def get_company_reviews():
@@ -224,6 +224,24 @@ def delete_review():
 	print("\nMaking a delete call for a review")
 	call_url = 'http://localhost:3000/api/reviews/' + review
 	make_delete_call(call_url)
+
+def patch_review():
+	print("ReviewID: ")
+	review = input()
+	print("New Rating: ")
+	rating = input()
+	print("New Interview Difficulty: ")
+	intdiff = input()
+	print("New Comment: ")
+	comment = input()
+	data = {'Rating':rating, 'InterviewDifficulty':intdiff, 'Comment':comment}
+	usable_data = {}
+	for key in data.keys():
+		if data[key] != '':
+			usable_data[key] = data[key]
+	print("\nMaking a patch call for a review")
+	call_url = 'http://localhost:3000/api/reviews/' + review
+	make_patch_call(call_url, usable_data)
 
 if __name__ == '__main__':
 	print("Call to test: ")
@@ -257,6 +275,8 @@ if __name__ == '__main__':
 			get_user_reviews()
 		elif call == 14:
 			delete_review()
+		elif call == 15:
+			patch_review()
 		print("\nCall to test: ")
 		call = int(input())
 	exit()
