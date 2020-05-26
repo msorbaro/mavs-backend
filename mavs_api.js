@@ -139,11 +139,12 @@ router.get("/api/companies/:name/:title/reviews",function(req,res1) {
 router.get("/api/companies/reviews",function(req,res1) {
 	//Get hashed password and privileges
 	global.connection.query('SELECT r.ReviewID, p.PositionTitle, c.CompanyName, r.ReviewDate, t.Term, t.Year, r.Rating, r.Comment, r.Anonymous, '+
-		'u.FirstName, u.LastName, u.GradYear, u.Major '+
+		'u.FirstName, u.LastName, u.GradYear, u.Major, r.InterviewDifficulty, l.City, l.State '+
 		'from MAVS_sp20.Reviews r '+
 		'left join MAVS_sp20.Positions p on r.PositionID = p.PositionID '+
 		'left join MAVS_sp20.Companies c on p.CompanyID = c.CompanyID '+
 		'left join MAVS_sp20.UserProfiles u on r.PersonID = u.PersonID '+
+		'left join MAVS_sp20.Locations l on l.LocationID = r.LocationID '+
 		'left join MAVS_sp20.Terms t on r.TermID = t.TermID; ',
 		[req.params.name], function (err, res2) {
 			if (err) console.log("error");
