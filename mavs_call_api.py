@@ -200,7 +200,7 @@ def fail_call_test():
 def post_new_review():
 	print("\nMaking a post call for a new review")
 	call_url = 'http://localhost:3000/api/review'
-	data = {'Email':'test@dartmouth.edu', 'PositionTitle':'Blacksmith', 'CompanyName':'Medieval Times', 'Term':'W', 'Year':2020, 'City':'London', 'State':'GB', 'Rating':10, 'Comment':'New review with new location and new position and new term', 'Anonymous':1, 'InterviewDifficulty':8}
+	data = {'Email':'test@dartmouth.edu', 'PositionTitle':'Blacksmith', 'CompanyName':'Medieval Times', 'Term':'W', 'Year':2020, 'City':'London', 'State':'GB', 'Rating':10, 'Comment':'Debugging', 'Anonymous':1, 'InterviewDifficulty':1}
 	make_post_call(call_url, data)
 
 def get_company_reviews():
