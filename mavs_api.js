@@ -16,17 +16,18 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 // get config
-var env = process.argv[2] || 'local'; //use localhost if environment not specified
+var cors = require('cors');
+var env = process.argv[2] || 'sunapee'; //use localhost if environment not specified
 var config = require('./mavs_config')[env]; //read credentials from config.js
-
+app.use(cors());
 
 //Database connection
 app.use(function(req, res, next){
 	global.connection = mysql.createConnection({
-		host     : config.database.host, 
-		user     : config.database.user, 
-		password : config.database.password, 
-		database : config.database.schema 
+		host     : config.database.host,
+		user     : config.database.user,
+		password : config.database.password,
+		database : config.database.schema
 	});
 	connection.connect();
 	next();
@@ -65,7 +66,7 @@ router.get("/api/companies/:name/info",function(req,res1) {
 
 // GET for list of all companies
 router.get("/api/companies",function(req,res1) {
-	global.connection.query('select c.CompanyName ' +
+	global.connection.query('select c.CompanyName, c.CompanySize, c.CompanyField ' +
 		'from MAVS_sp20.Companies c;',
 		[], function (err, res2) {
 			if (err) console.log("error");
@@ -134,6 +135,32 @@ router.get("/api/companies/:name/:title/reviews",function(req,res1) {
 });
 
 
+// GET to view all reviews for all companies
+router.get("/api/companies/reviews",function(req,res1) {
+	//Get hashed password and privileges
+	global.connection.query('SELECT r.ReviewID, p.PositionTitle, c.CompanyName, r.ReviewDate, t.Term, t.Year, r.Rating, r.Comment, r.Anonymous, '+
+		'u.FirstName, u.LastName, u.GradYear, u.Major '+
+		'from MAVS_sp20.Reviews r '+
+		'left join MAVS_sp20.Positions p on r.PositionID = p.PositionID '+
+		'left join MAVS_sp20.Companies c on p.CompanyID = c.CompanyID '+
+		'left join MAVS_sp20.UserProfiles u on r.PersonID = u.PersonID '+
+		'left join MAVS_sp20.Terms t on r.TermID = t.TermID; ',
+		[req.params.name], function (err, res2) {
+			if (err) console.log("error");
+			res1.send(JSON.stringify({"status": 200, "error": null, "response": res2}));
+		}
+	)
+});
+
+router.post("/api/companies",function(req,res){
+		global.connection.query('INSERT INTO MAVS_sp20.Companies ( CompanyName, CompanySize, CompanyField ) VALUES (?, ?, ?) ', [req.body.name, req.body.size, req.body.field],
+		function (error, results, fields) {
+				if (error) throw error;
+						res.send(JSON.stringify({"status": 200, "error": null, "response": "Added"}));
+				});
+	})
+
+
 // GET to view information within a user's profile
 router.get("/api/users/:name",function(req,res1) {
 	//Get hashed password and privileges
@@ -146,6 +173,7 @@ router.get("/api/users/:name",function(req,res1) {
 		}
 	)
 });
+
 
 // PATCH to update desired info in a user profile
 // name = user's email address (functions as their username)
@@ -329,7 +357,6 @@ router.post("/api/review",function(req,res1) {
 // GET for all the review for a company
 // name = Company Name
 router.get("/api/companies/:name/reviews",function(req,res1) {
-	//Get hashed password and privileges
 	global.connection.query('select r.ReviewID, p.PositionTitle, c.CompanyName, r.ReviewDate, t.Term, t.Year, l.City, l.State, r.Rating, r.InterviewDifficulty, r.Comment, r.Anonymous, '+
 		'u.FirstName, u.LastName, u.GradYear, u.Major '+
 		'from MAVS_sp20.Reviews r '+
