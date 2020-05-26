@@ -308,9 +308,9 @@ router.post("/api/review",function(req,res1) {
 																	[posid, parseInt(req.body["Rating"]), req.body["Comment"], personid, parseInt(req.body["Anonymous"]), termid, locid, parseInt(req.body["InterviewDifficulty"])], function (err, res13) {
 																		if (err) console.log("error writing the review");
 																		full_response.push(res13);
+																		console.log("Review is being posted..")
 																		//res1.send(res13);
 																	});
-																res1.send(JSON.stringify({"status": 200, "error": null, "response": full_response}));
 															}
 														});
 												}
@@ -321,7 +321,8 @@ router.post("/api/review",function(req,res1) {
 					});
 			}
 		});
-	console.log("Response logged\n")
+	res1.send(JSON.stringify({"status": 200, "error": null, "response": full_response}));
+	console.log("DONE\n")
 });
 
 
