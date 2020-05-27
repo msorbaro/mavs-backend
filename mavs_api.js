@@ -16,18 +16,17 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 // get config
-var cors = require('cors');
-var env = process.argv[2] || 'sunapee'; //use localhost if environment not specified
+var env = process.argv[2] || 'local'; //use localhost if environment not specified
 var config = require('./mavs_config')[env]; //read credentials from config.js
-app.use(cors());
+
 
 //Database connection
 app.use(function(req, res, next){
 	global.connection = mysql.createConnection({
-		host     : config.database.host,
-		user     : config.database.user,
-		password : config.database.password,
-		database : config.database.schema
+		host     : config.database.host, 
+		user     : config.database.user, 
+		password : config.database.password, 
+		database : config.database.schema 
 	});
 	connection.connect();
 	next();
@@ -66,7 +65,7 @@ router.get("/api/companies/:name/info",function(req,res1) {
 
 // GET for list of all companies
 router.get("/api/companies",function(req,res1) {
-	global.connection.query('select c.CompanyName, c.CompanySize, c.CompanyField ' +
+	global.connection.query('select c.CompanyName ' +
 		'from MAVS_sp20.Companies c;',
 		[], function (err, res2) {
 			if (err) console.log("error");
@@ -153,6 +152,8 @@ router.get("/api/companies/reviews",function(req,res1) {
 	)
 });
 
+
+// POST to add a new company
 router.post("/api/companies",function(req,res){
 		global.connection.query('INSERT INTO MAVS_sp20.Companies ( CompanyName, CompanySize, CompanyField ) VALUES (?, ?, ?) ', [req.body.name, req.body.size, req.body.field],
 		function (error, results, fields) {
@@ -174,7 +175,6 @@ router.get("/api/users/:name",function(req,res1) {
 		}
 	)
 });
-
 
 // PATCH to update desired info in a user profile
 // name = user's email address (functions as their username)
@@ -272,92 +272,21 @@ router.post("/api/signup",function(req,res) {
 //POST to write a new review
 router.post("/api/review",function(req,res1) {
 	var full_response = [];
-	global.connection.query('SELECT PersonID FROM MAVS_sp20.UserProfiles WHERE Email = ?;',
-		[req.body["Email"]], function (err, res2) {
-			if (err) console.log("error getting personid");
-			full_response.push(res2);
-			if (res2.length > 0) {
-				var personid = res2[0]["PersonID"];
-				global.connection.query('CALL new_comp(?);',
-					[req.body["CompanyName"]], function (err, res3) {
-						if (err) console.log("error running new_comp procedure");
-						full_response.push(res3);
-					});
-				global.connection.query('SELECT CompanyID FROM MAVS_sp20.Companies WHERE CompanyName = ?;',
-					[req.body["CompanyName"]], function (err, res4) {
-						if (err) console.log("error getting compid");
-						full_response.push(res4);
-						if (res4.length > 0) {
-							var compid = res4[0]["CompanyID"];
-							global.connection.query('CALL new_pos(?, ?);',
-								[req.body["PositionTitle"], compid], function (err, res5) {
-									if (err) console.log("error running new_pos procedure");
-									full_response.push(res5);
-								});
-							global.connection.query('SELECT PositionID FROM MAVS_sp20.Positions WHERE PositionTitle like ? and CompanyID = ?',
-								[req.body["PositionTitle"], compid], function (err, res6) {
-									if (err) console.log("error getting posid");
-									full_response.push(res6);
-									if (res6.length > 0) {
-										var posid = res6[0]["PositionID"];
-										global.connection.query('INSERT INTO MAVS_sp20.Locations (City, State) Value (?, ?);',
-											[req.body["City"], req.body["State"]], function (err, res7) {
-												if (err) console.log("error creating new location");
-												full_response.push(res7);
-											});
-										global.connection.query('SELECT LocationID FROM MAVS_sp20.Locations WHERE City like ? and State like ? LIMIT 1;',
-											[req.body["City"], req.body["State"]], function (err, res8) {
-												if (err) console.log("error getting locid");
-												full_response.push(res8);
-												if (res8.length > 0) {
-													var locid = res8[0]["LocationID"];
-													global.connection.query('INSERT INTO MAVS_sp20.LocatedAt (PositionID, LocationID) VALUES (?, ?);',
-														[posid, locid], function (err, res9) {
-															if (err) console.log("error updating located at");
-															full_response.push(res9);
-														});
-													global.connection.query('INSERT INTO MAVS_sp20.Terms (Term, `Year`) Value (?, ?);',
-														[req.body["Term"], req.body["Year"]], function (err, res10) {
-															if (err) console.log("error creating new term");
-															full_response.push(res10);
-														});
-													global.connection.query('SELECT TermID FROM MAVS_sp20.Terms WHERE Term like ? and `Year` like ? LIMIT 1;',
-														[req.body["Term"], req.body["Year"]], function (err, res11) {
-															if (err) console.log("error getting termid");
-															full_response.push(res11);
-															if (res11.length > 0) {
-																var termid = res11[0]["TermID"];
-																global.connection.query('INSERT INTO MAVS_sp20.OfferedTerms (PositionID, TermID) VALUE (?, ?);',
-																	[posid, termid], function (err, res12) {
-																		if (err) console.log("error updating offered terms");
-																		full_response.push(res12);
-																	});
-																global.connection.query('INSERT INTO MAVS_sp20.Reviews (PositionID, Rating, Comment, PersonID, Anonymous, TermID, LocationID, InterviewDifficulty) ' +
-																	'VALUES (?, ?, ?, ?, ?, ?, ?, ?);',
-																	[posid, parseInt(req.body["Rating"]), req.body["Comment"], personid, parseInt(req.body["Anonymous"]), termid, locid, parseInt(req.body["InterviewDifficulty"])], function (err, res13) {
-																		if (err) console.log("error writing the review");
-																		full_response.push(res13);
-																		console.log("Review is being posted..")
-																		//res1.send(res13);
-																	});
-															}
-														});
-												}
-											});
-									}
-								});
-						}
-					});
-			}
+	global.connection.query('CALL `post_review`(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
+		[req.body["Email"], req.body["CompanyName"], req.body["PositionTitle"], req.body["City"],
+			req.body["State"], req.body["Term"], req.body["Year"], req.body["Rating"], req.body["Comment"],
+			req.body["Anonymous"], req.body["InterviewDifficulty"]],
+		function (err, res2) {
+			if (err) console.log("error");
+			res1.send(JSON.stringify({"status": 200, "error": null, "response": res2}));
 		});
-	res1.send(JSON.stringify({"status": 200, "error": null, "response": full_response}));
-	console.log("DONE\n")
 });
 
 
 // GET for all the review for a company
 // name = Company Name
 router.get("/api/companies/:name/reviews",function(req,res1) {
+	//Get hashed password and privileges
 	global.connection.query('select r.ReviewID, p.PositionTitle, c.CompanyName, r.ReviewDate, t.Term, t.Year, l.City, l.State, r.Rating, r.InterviewDifficulty, r.Comment, r.Anonymous, '+
 		'u.FirstName, u.LastName, u.GradYear, u.Major, u.Email '+
 		'from MAVS_sp20.Reviews r '+
