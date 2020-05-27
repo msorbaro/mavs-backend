@@ -7,10 +7,13 @@
 	App will use the database credentials and port stored in config.js for local or sunapee server
 */
 
+var cors = require('cors');
 var express = require('express');
 let mysql = require('mysql');
 const bodyParser = require('body-parser'); //allows us to get passed in api calls easily
 var app = express();
+app.use(cors());
+
 
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
