@@ -1,14 +1,14 @@
 
 import requests
 '''
-Client side demo to fetch data from a RESTful API.  Assumes Node.js file api is running (nodemon api.js <localhost|sunapee>) 
+Client side demo to fetch data from a RESTful API.  Assumes Node.js file api is running (nodemon api.js <localhost|sunapee>)
 on the server side.
 Author: Tim Pierson, Dartmouth CS61, Spring 2020
 Requires installation of mysql connector: pip install mysql-connector-python
 	also requires Requests: pip install requests
 Based on: https://dev.mysql.com/doc/connector-python/en/connector-python-example-connecting.html
 
-Usage: python call_api.py 
+Usage: python call_api.py
 '''
 
 def make_get_call(url):
@@ -77,9 +77,3 @@ if __name__ == '__main__':
 
 	print "\nMaking a delete call to restaurants"
 	make_delete_call('https://localhost:3000/api/restaurants/30075445')
-
-
-
-
-
-	
