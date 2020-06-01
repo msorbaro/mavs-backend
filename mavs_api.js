@@ -1,10 +1,9 @@
-/* 	Lab 3
-	Authors: Tim Pierson, Dartmouth CS61, Spring 2020 (framework)
-			Summer Christensen, Dartmouth CS61, Spring 2020
+/* 	Authors: Summer Christensen, Dartmouth CS61, Spring 2020
+	Tim Pierson, Dartmouth CS61, Spring 2020 (for framework from lab 3)
 
 	Add config.js file to root directory
-	To run: nodemon api.js <local|sunapee>
-	App will use the database credentials and port stored in config.js for local or sunapee server
+	To run: nodemon api.js
+	App will use the database credentials and port stored in mavs_config.js for local or sunapee server
 */
 
 var cors = require('cors');
@@ -19,7 +18,7 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 // get config
-var env = process.argv[2] || 'local'; //use localhost if environment not specified
+var env = process.argv[2] || 'sunapee'; //use sunapee if environment not specified
 var config = require('./mavs_config')[env]; //read credentials from config.js
 
 
@@ -119,7 +118,6 @@ router.get("/api/companies/:name/:title/info",function(req,res1) {
 // GET for all relevant info for every review on a position within a company
 // name = company name, title = position title
 router.get("/api/companies/:name/:title/reviews",function(req,res1) {
-	//Get hashed password and privileges
 	global.connection.query('select p.PositionTitle, r.ReviewDate, t.Term, t.Year, l.City, l.State, r.Rating, r.InterviewDifficulty, r.Comment, r.Anonymous, '+
 	'u.FirstName, u.LastName, u.GradYear, u.Major '+
 	'from MAVS_sp20.Reviews r '+
@@ -139,7 +137,6 @@ router.get("/api/companies/:name/:title/reviews",function(req,res1) {
 
 // GET to view all reviews for all companies
 router.get("/api/companies/reviews",function(req,res1) {
-	//Get hashed password and privileges
 	global.connection.query('SELECT r.ReviewID, p.PositionTitle, c.CompanyName, r.ReviewDate, t.Term, t.Year, r.Rating, r.Comment, r.Anonymous, '+
 		'u.FirstName, u.LastName, u.GradYear, u.Major, r.InterviewDifficulty, l.City, l.State '+
 		'from MAVS_sp20.Reviews r '+
@@ -167,8 +164,8 @@ router.post("/api/companies",function(req,res){
 
 
 // GET to view information within a user's profile
+// name = user's email
 router.get("/api/users/:name",function(req,res1) {
-	//Get hashed password and privileges
 	global.connection.query('select Email, FirstName, LastName, GradYear, Major '+
 		'from MAVS_sp20.UserProfiles '+
 		'where Email like ?;',
@@ -181,6 +178,7 @@ router.get("/api/users/:name",function(req,res1) {
 
 // PATCH to update desired info in a user profile
 // name = user's email address (functions as their username)
+// updates all fields included in the req JSON
 router.patch("/api/users/:name",function(req,res1){
 	//Get hashed password and privileges
 	global.connection.query('SELECT * from MAVS_sp20.UserProfiles WHERE Email LIKE ?', [req.params.name], function (error, results) {
@@ -191,10 +189,10 @@ router.patch("/api/users/:name",function(req,res1){
 			res1.send(JSON.stringify({"status": 200, "error": null, "response": false}));
 		}
 		else{
-			var return_results = [];
-			// Only update attributes that changed
+			var return_results = []; // To keep track of all sub-responses
+			// for each attribute passed in
 			for (var col in req.body) {
-				// Make sure to hash password if changed
+				// If updating the password, hash it before storing
 				if (col.toLowerCase() == 'password') {
 					bcrypt.hash(req.body[col], saltRounds, function (err, hash) {
 						global.connection.query('UPDATE MAVS_sp20.UserProfiles SET Password = ? WHERE Email = ?;',
@@ -208,6 +206,7 @@ router.patch("/api/users/:name",function(req,res1){
 						});
 					});
 				}
+				// If not the password, update as usual
 				else {
 					global.connection.query('UPDATE MAVS_sp20.UserProfiles SET ?? = ? WHERE Email = ?;',
 						[col, req.body[col], req.params.name], function (error, results) {
@@ -228,6 +227,7 @@ router.patch("/api/users/:name",function(req,res1){
 
 // PUT to verify a user's email and password
 router.put("/api/signin",function(req,res){
+	// Make sure username exists
 	global.connection.query('SELECT * from MAVS_sp20.UserProfiles WHERE Email LIKE ?', [req.body['email']], function (error, results) {
 		if (error) throw error;
 		console.log(results.length)
@@ -235,6 +235,7 @@ router.put("/api/signin",function(req,res){
 		if (results.length === 0){
 			res.send(JSON.stringify({"status": 200, "error": null, "response": false}));
 		}
+		// If it exists, check the password
 		else{
 			bcrypt.compare(req.body['password'], results[0]['Password'], function(err, result) {
 				if (result === true){
@@ -253,6 +254,7 @@ router.put("/api/signin",function(req,res){
 // POST to add a new user to the system
 router.post("/api/signup",function(req,res) {
 	bcrypt.genSalt(saltRounds, function(err, salt) {
+		// hash the password for storage
 		bcrypt.hash(req.body['password'], salt, function(err, hash) {
 			global.connection.query('SELECT * FROM MAVS_sp20.UserProfiles WHERE Email = ?', [req.body.email], function (error, results) {
 				if (error) throw error;
@@ -272,7 +274,8 @@ router.post("/api/signup",function(req,res) {
 });
 
 
-//POST to write a new review
+// POST to write a new review
+// Uses the stored procedure post_review to handle several select and insert statements
 router.post("/api/review",function(req,res1) {
 	var full_response = [];
 	global.connection.query('CALL `post_review`(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
